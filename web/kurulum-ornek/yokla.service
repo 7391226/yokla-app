@@ -1,0 +1,32 @@
+# Örnek systemd servisi. Kopyala: /etc/systemd/system/yokla.service
+# Sonra: systemctl daemon-reload && systemctl enable --now yokla
+#
+# Uygulama klasörü (/opt/yokla) içine şunları koy:
+#   .next/standalone/*  ->  /opt/yokla/
+#   .next/static        ->  /opt/yokla/.next/static
+#   public              ->  /opt/yokla/public
+
+[Unit]
+Description=Yokla
+After=network.target
+
+[Service]
+Type=simple
+User=yokla
+WorkingDirectory=/opt/yokla
+# Ayarlar: NODE_ENV=production, PORT=3100, HOSTNAME=127.0.0.1, isteğe bağlı ANTHROPIC_API_KEY
+EnvironmentFile=/etc/yokla.env
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=3
+# Yokla hiçbir şey kaydetmez; diske yazma izni gerekmez
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+# Next.js yalnız kendi önbellek klasörüne yazar
+ReadWritePaths=-/opt/yokla/.next/cache
+MemoryMax=400M
+
+[Install]
+WantedBy=multi-user.target
